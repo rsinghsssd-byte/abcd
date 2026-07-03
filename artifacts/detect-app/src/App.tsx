@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -34,11 +34,11 @@ function AppContent() {
   }
 
   if (!user) {
-    const Login = React.lazy(() => import("@/pages/Login"));
+    const Login = lazy(() => import("@/pages/Login"));
     return (
-      <React.Suspense fallback={null}>
+      <Suspense fallback={null}>
         <Login />
-      </React.Suspense>
+      </Suspense>
     );
   }
 
@@ -61,13 +61,13 @@ function AppContent() {
 function AppShell({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(!user?.onboardingCompleted);
-  const OnboardingWizard = React.lazy(() => import("@/components/onboarding/OnboardingWizard"));
+  const OnboardingWizard = lazy(() => import("@/components/onboarding/OnboardingWizard"));
   return (
     <>
       {showOnboarding && (
-        <React.Suspense fallback={null}>
+        <Suspense fallback={null}>
           <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
-        </React.Suspense>
+        </Suspense>
       )}
       <AppLayout>{children}</AppLayout>
     </>
