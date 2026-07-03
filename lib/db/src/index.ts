@@ -10,8 +10,10 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
+const cleanUrl = process.env.DATABASE_URL.replace(/[?&]sslmode=[^&]*/g, "").replace(/[?&]$/, "");
+
 export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: cleanUrl,
   ssl: { rejectUnauthorized: false },
 });
 export const db = drizzle(pool, { schema });
