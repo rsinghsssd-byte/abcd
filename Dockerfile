@@ -1,4 +1,4 @@
-FROM node:20-slim
+FROM node:22-slim
 
 # System dependencies for onnxruntime-node, sharp, esbuild
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -21,22 +21,19 @@ RUN corepack enable \
 RUN cd artifacts/api-server && pnpm run build
 
 # Build frontend (Vite → artifacts/detect-app/dist/public)
-# PORT/BASE_PATH are required by vite.config.ts at build time
 RUN cd artifacts/detect-app \
   && PORT=7860 BASE_PATH=/ pnpm run build
 
-# ONNX models (kept in workspace, persisted by HF Spaces)
+# ONNX models (persisted by HF Spaces workspace)
 COPY artifacts/api-server/models/ ./artifacts/api-server/models/
 
 # Push DB schema (no-op if tables already exist)
 RUN pnpm --filter db push || true
 
-# HF Spaces uses port 7860 by default
 EXPOSE 7860
 
 ENV PORT=7860 \
     NODE_ENV=production \
     BASE_PATH=/
 
-# Express serves API routes + static frontend (SPA fallback in app.ts)
 CMD ["node", "--enable-source-maps", "./artifacts/api-server/dist/index.mjs"]
