@@ -14,8 +14,13 @@ COPY lib/ ./lib/
 COPY artifacts/api-server/ ./artifacts/api-server/
 COPY artifacts/detect-app/ ./artifacts/detect-app/
 
-RUN corepack enable \
-  && pnpm install --frozen-lockfile
+# Install pnpm 10 globally (matches workspace pnpm version)
+RUN corepack enable && corepack prepare pnpm@10.0.0 --activate
+
+# Delete stale lockfile to avoid pnpm format/overrides mismatch,
+# then install with matching pnpm version
+RUN rm -f pnpm-lock.yaml \
+  && pnpm install --no-frozen-lockfile
 
 # Build backend (esbuild → artifacts/api-server/dist/index.mjs)
 RUN cd artifacts/api-server && pnpm run build
