@@ -21,6 +21,7 @@ COPY tsconfig.json ./tsconfig.json
 COPY lib/ ./lib/
 COPY artifacts/api-server/ ./artifacts/api-server/
 COPY artifacts/detect-app/ ./artifacts/detect-app/
+COPY scripts/ ./scripts/
 
 # Delete any stale lockfile and install deps
 RUN rm -f pnpm-lock.yaml \
