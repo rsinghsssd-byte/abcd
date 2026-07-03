@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { setGlobalHeader, setAuthTokenGetter } from "@workspace/api-client-react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AppLayout } from "@/components/layout/AppLayout";
 
 import Home from "@/pages/Home";
@@ -42,16 +43,18 @@ function AppContent() {
   }
 
   return (
-    <AppShell>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/camera" component={CameraPage} />
-        <Route path="/dashboard" component={Dashboard} />
-        <Route path="/history" component={History} />
-        <Route path="/detection/:id" component={DetectionDetail} />
-        <Route component={NotFound} />
-      </Switch>
-    </AppShell>
+    <ErrorBoundary>
+      <AppShell>
+        <Switch>
+          <Route path="/" component={Home} />
+          <Route path="/camera" component={CameraPage} />
+          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/history" component={History} />
+          <Route path="/detection/:id" component={DetectionDetail} />
+          <Route component={NotFound} />
+        </Switch>
+      </AppShell>
+    </ErrorBoundary>
   );
 }
 
