@@ -12,7 +12,7 @@ export default function DetectionDetail() {
   const id = params.id ? parseInt(params.id, 10) : null;
   
   const { data: detection, isLoading } = useGetDetection(id as number, {
-    query: { enabled: !!id } as { enabled: boolean; queryKey: readonly unknown[] },
+    query: { enabled: Number.isFinite(id as number) && (id as number) > 0 } as { enabled: boolean; queryKey: readonly unknown[] },
   });
 
   if (isLoading) {
@@ -29,6 +29,9 @@ export default function DetectionDetail() {
       </div>
     );
   }
+
+  const counts = detection.counts ?? { total: 0 };
+  const objects = detection.objects ?? [];
 
   return (
     <div className="space-y-6 pb-12">
@@ -61,41 +64,43 @@ export default function DetectionDetail() {
             </div>
           </Card>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <MetaBox icon={FileType} label="Media Type" value={detection.mediaType.toUpperCase()} />
-            <MetaBox icon={Clock} label="Processing" value={`${detection.processingTimeMs}ms`} />
-            <MetaBox icon={Calendar} label="Date" value={new Date(detection.createdAt).toLocaleDateString()} />
-          </div>
-        </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <MetaBox icon={FileType} label="Media Type" value={(detection.mediaType ?? "unknown").toUpperCase()} />
+        <MetaBox icon={Clock} label="Processing" value={`${detection.processingTimeMs ?? 0}ms`} />
+        <MetaBox icon={Calendar} label="Date" value={detection.createdAt ? new Date(detection.createdAt).toLocaleDateString() : "—"} />
+      </div>
+    </div>
 
-        {/* Sidebar Data */}
-        <div className="space-y-6">
-          <Card className="border border-border rounded-none shadow-none bg-card p-6">
-            <h2 className="font-bold text-xl mb-6 flex items-center justify-between">
-              Analysis Report
-              <SeverityBadge severity={detection.severity} />
-            </h2>
-            
-            <div className="space-y-4 mb-8">
-              <div className="flex justify-between py-2 border-b border-border/50 text-sm">
-                <span className="text-muted-foreground font-mono">Filename</span>
-                <span className="font-semibold truncate max-w-[150px]" title={detection.filename}>{detection.filename}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-border/50 text-sm">
-                <span className="text-muted-foreground font-mono">Total Objects</span>
-                <span className="font-semibold font-mono">{detection.counts.total}</span>
-              </div>
+      {/* Sidebar Data */}
+      <div className="space-y-6">
+        <Card className="border border-border rounded-none shadow-none bg-card p-6">
+          <h2 className="font-bold text-xl mb-6 flex items-center justify-between">
+            Analysis Report
+            <SeverityBadge severity={detection.severity ?? "low"} />
+          </h2>
+          
+          <div className="space-y-4 mb-8">
+            <div className="flex justify-between py-2 border-b border-border/50 text-sm">
+              <span className="text-muted-foreground font-mono">Filename</span>
+              <span className="font-semibold truncate max-w-[150px]" title={detection.filename ?? ""}>{detection.filename ?? "—"}</span>
             </div>
+            <div className="flex justify-between py-2 border-b border-border/50 text-sm">
+              <span className="text-muted-foreground font-mono">Total Objects</span>
+              <span className="font-semibold font-mono">{counts.total}</span>
+            </div>
+          </div>
 
-            <h3 className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-4">Detected Entities</h3>
-            
-            {detection.objects.length === 0 ? (
-              <div className="text-sm font-mono text-muted-foreground p-4 bg-accent/20 border border-dashed border-border text-center">
-                Clean frame. No entities detected.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {detection.objects.map((obj, i) => (
+          <h3 className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-4">Detected Entities</h3>
+          
+          {objects.length === 0 ? (
+            <div className="text-sm font-mono text-muted-foreground p-4 bg-accent/20 border border-dashed border-border text-center">
+              Clean frame. No entities detected.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {objects.map((obj, i) => {
+                const bbox = obj.bbox ?? { x: 0, y: 0, width: 0, height: 0 };
+                return (
                   <motion.div 
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -107,21 +112,22 @@ export default function DetectionDetail() {
                       <div className="flex items-center gap-2">
                         <Tag className="w-3 h-3 text-muted-foreground" />
                         <span className="font-semibold text-sm capitalize">
-                          {obj.className.replace('_', ' ')}
+                          {(obj.className ?? "unknown").replace(/_/g, " ")}
                         </span>
                       </div>
-                      <span className="font-mono text-xs">{(obj.confidence * 100).toFixed(1)}%</span>
+                      <span className="font-mono text-xs">{(obj.confidence ?? 0) * 100}%</span>
                     </div>
-                    <Progress value={obj.confidence * 100} className="h-1 bg-accent rounded-none mb-2" />
+                    <Progress value={(obj.confidence ?? 0) * 100} className="h-1 bg-accent rounded-none mb-2" />
                     <div className="text-[10px] font-mono text-muted-foreground">
-                      BBOX: [{(obj.bbox.x).toFixed(2)}, {(obj.bbox.y).toFixed(2)}, {(obj.bbox.width).toFixed(2)}, {(obj.bbox.height).toFixed(2)}]
+                      BBOX: [{bbox.x.toFixed(2)}, {bbox.y.toFixed(2)}, {bbox.width.toFixed(2)}, {bbox.height.toFixed(2)}]
                     </div>
                   </motion.div>
-                ))}
-              </div>
-            )}
-          </Card>
-        </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+      </div>
       </div>
     </div>
   );
