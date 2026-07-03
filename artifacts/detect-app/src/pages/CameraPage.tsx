@@ -43,6 +43,7 @@ export default function CameraPage() {
   const overlayRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
 
   const [scanning, setScanning] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
@@ -176,6 +177,41 @@ export default function CameraPage() {
     };
   }, [stopCamera]);
 
+  useEffect(() => {
+    if (!cameraOn) return;
+    const video = videoRef.current;
+    if (!video) return;
+
+    const positionOverlay = () => {
+      const canvas = overlayRef.current;
+      const container = videoContainerRef.current;
+      if (!canvas || !container) return;
+
+      const vw = video.videoWidth || 640;
+      const vh = video.videoHeight || 480;
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+
+      const scale = Math.max(cw / vw, ch / vh);
+      const renderedW = vw * scale;
+      const renderedH = vh * scale;
+
+      canvas.style.left = `${-(renderedW - cw) / 2}px`;
+      canvas.style.top = `${-(renderedH - ch) / 2}px`;
+      canvas.style.width = `${renderedW}px`;
+      canvas.style.height = `${renderedH}px`;
+    };
+
+    video.addEventListener("loadedmetadata", positionOverlay, { once: true });
+    window.addEventListener("resize", positionOverlay);
+    requestAnimationFrame(positionOverlay);
+
+    return () => {
+      video.removeEventListener("loadedmetadata", positionOverlay);
+      window.removeEventListener("resize", positionOverlay);
+    };
+  }, [cameraOn]);
+
   return (
     <div className="space-y-6 h-full">
       <div>
@@ -187,7 +223,7 @@ export default function CameraPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
-          <div className="border border-border bg-card relative overflow-hidden" style={{ aspectRatio: "16/9" }}>
+          <div ref={videoContainerRef} className="border border-border bg-card relative overflow-hidden" style={{ aspectRatio: "16/9" }}>
             {!cameraOn && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background">
                 <div className="w-16 h-16 border-2 border-border flex items-center justify-center">
@@ -216,8 +252,7 @@ export default function CameraPage() {
             {cameraOn && (
               <canvas
                 ref={overlayRef}
-                className="absolute inset-0 w-full h-full pointer-events-none"
-                style={{ objectFit: "cover" }}
+                className="absolute top-0 left-0 pointer-events-none"
               />
             )}
 

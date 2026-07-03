@@ -2,11 +2,15 @@ import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import path from "path";
+import fs from "node:fs";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
 const apiServerDir = path.resolve(import.meta.dirname ?? __dirname, "..");
 const uploadsDir = path.resolve(apiServerDir, "uploads");
+for (const sub of ["originals", "annotated", "thumbnails"]) {
+  fs.mkdirSync(path.join(uploadsDir, sub), { recursive: true });
+}
 const frontendDir = path.resolve(apiServerDir, "..", "detect-app", "dist", "public");
 
 const app: Express = express();

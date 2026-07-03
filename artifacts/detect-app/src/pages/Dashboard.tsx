@@ -34,8 +34,8 @@ function formatValue(key: string, val: number): string {
 }
 
 export default function Dashboard() {
-  const { data: stats, isLoading: statsLoading } = useGetStats();
-  const { data: recent, isLoading: recentLoading } = useGetRecentDetections();
+  const { data: stats, isLoading: statsLoading, error: statsError } = useGetStats();
+  const { data: recent, isLoading: recentLoading, error: recentError } = useGetRecentDetections();
 
   if (statsLoading || recentLoading) {
     return (
@@ -52,7 +52,21 @@ export default function Dashboard() {
     );
   }
 
-  if (!stats) return null;
+  if (statsError || recentError) {
+    return (
+      <div className="py-20 text-center">
+        <p className="text-destructive font-mono">Failed to load dashboard data. Please try again later.</p>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="py-20 text-center">
+        <p className="text-muted-foreground font-mono">No analytics data available yet. Run some scans first.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 pb-12">
@@ -211,7 +225,7 @@ export default function Dashboard() {
               </Link>
             </div>
             <div className="divide-y divide-border">
-              {recent?.slice(0, 4).map((item) => {
+              {(recent ?? []).slice(0, 4).map((item) => {
                 const sev = SEVERITY_CONFIG[item.severity as keyof typeof SEVERITY_CONFIG];
                 return (
                   <Link key={item.id} href={`/detection/${item.id}`}>

@@ -22,10 +22,18 @@ const CLASS_CHIPS = {
 
 export default function History() {
   const [filter, setFilter] = useState<"all" | "image" | "video">("all");
-  const { data, isLoading } = useListDetections({ mediaType: filter });
+  const { data, isLoading, error } = useListDetections({ mediaType: filter });
   const deleteDetection = useDeleteDetection();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  if (error) {
+    return (
+      <div className="py-20 text-center">
+        <p className="text-destructive font-mono text-sm">Failed to load scan history: {error?.message ?? "Unknown error"}</p>
+      </div>
+    );
+  }
 
   const handleDelete = (id: number, e: React.MouseEvent) => {
     e.preventDefault();
