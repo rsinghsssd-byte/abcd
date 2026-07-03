@@ -36,8 +36,8 @@ RUN cd artifacts/detect-app \
 # ONNX models (persisted by HF Spaces workspace)
 COPY artifacts/api-server/models/ ./artifacts/api-server/models/
 
-# Push DB schema (no-op if tables already exist)
-RUN pnpm --filter db push || true
+# Push DB schema at runtime (secrets available then, not during build)
+# Handled by entrypoint.sh — removed build-time push
 
 EXPOSE 7860
 
@@ -45,4 +45,8 @@ ENV PORT=7860 \
     NODE_ENV=production \
     BASE_PATH=/
 
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["node", "--enable-source-maps", "./artifacts/api-server/dist/index.mjs"]
