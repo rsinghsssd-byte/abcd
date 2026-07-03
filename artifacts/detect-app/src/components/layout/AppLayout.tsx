@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { ScanLine, Activity, History as HistoryIcon, Camera, Menu, X, PanelLeftClose, PanelLeft } from "lucide-react";
+import { ScanLine, Activity, History as HistoryIcon, Camera, Menu, X, PanelLeft, PanelLeftClose } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -20,28 +20,6 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
-
-  const NavLinks = () =>
-    navItems.map((item) => {
-      const Icon = item.icon;
-      const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
-      return (
-        <Link key={item.href} href={item.href}>
-          <div
-            className={cn(
-              "flex items-center gap-2.5 px-3 py-2 rounded text-sm transition-all cursor-pointer font-serif whitespace-nowrap",
-              isActive
-                ? "bg-stone-200/70 text-stone-800"
-                : "text-stone-500 hover:text-stone-700 hover:bg-stone-200/30"
-            )}
-            onClick={() => setMobileOpen(false)}
-          >
-            <Icon className="w-4 h-4 shrink-0" />
-            <span>{item.label}</span>
-          </div>
-        </Link>
-      );
-    });
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-amber-50/60">
@@ -67,12 +45,12 @@ export function AppLayout({ children }: AppLayoutProps) {
         )}
       </AnimatePresence>
 
-      {/* Sidebar — desktop: static in flex flow, mobile: fixed overlay */}
+      {/* Sidebar */}
       <aside
         className={cn(
-          "border-r border-stone-300/40 bg-stone-50/80 paper-texture transition-all duration-300 shrink-0",
-          "fixed md:relative inset-y-0 left-0 z-40 md:z-0 flex flex-col",
-          mobileOpen || desktopOpen ? "w-56 translate-x-0" : "-translate-x-full md:w-0 md:overflow-hidden md:border-r-0 md:min-w-0"
+          "fixed md:relative inset-y-0 left-0 z-40 md:z-auto flex flex-col border-r border-stone-300/40 bg-stone-50/80 paper-texture transition-all duration-300",
+          "w-56",
+          (mobileOpen || desktopOpen) ? "translate-x-0" : "-translate-x-full md:-translate-x-full md:w-0 md:min-w-0 md:border-r-0 md:overflow-hidden"
         )}
       >
         <div className="h-14 flex items-center px-4 border-b border-dashed border-stone-300/50 shrink-0">
@@ -88,8 +66,27 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
         </div>
 
-        <nav className="flex-1 py-4 px-2 space-y-0.5 min-w-[224px]">
-          {NavLinks()}
+        <nav className="flex-1 py-4 px-2 space-y-0.5">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+            return (
+              <Link key={item.href} href={item.href}>
+                <div
+                  className={cn(
+                    "flex items-center gap-2.5 px-3 py-2 rounded text-sm transition-all cursor-pointer font-serif whitespace-nowrap",
+                    isActive
+                      ? "bg-stone-200/70 text-stone-800"
+                      : "text-stone-500 hover:text-stone-700 hover:bg-stone-200/30"
+                  )}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span>{item.label}</span>
+                </div>
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="p-3 border-t border-dashed border-stone-300/50 shrink-0">
