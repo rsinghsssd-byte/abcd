@@ -7,7 +7,7 @@ if (!DATABASE_URL) {
   process.exit(0);
 }
 
-const pool = new Pool({ connectionString: DATABASE_URL });
+const pool = new Pool({ connectionString: DATABASE_URL, family: 4 });
 
 async function migrate() {
   const client = await pool.connect();
