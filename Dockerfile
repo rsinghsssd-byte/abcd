@@ -11,10 +11,12 @@ WORKDIR /app
 # Install pnpm 10 globally (matches workspace pnpm version)
 RUN corepack enable && corepack prepare pnpm@10.0.0 --activate
 
-# Copy workspace manifests in separate steps so missing lockfile
-# doesn't break Docker's cache calculation
+# Copy root config files first (separate steps so missing lockfile
+# doesn't break Docker cache calculation)
 COPY package.json ./package.json
 COPY pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY tsconfig.base.json ./tsconfig.base.json
+COPY tsconfig.json ./tsconfig.json
 
 COPY lib/ ./lib/
 COPY artifacts/api-server/ ./artifacts/api-server/
