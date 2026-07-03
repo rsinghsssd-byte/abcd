@@ -7,6 +7,7 @@ import { logger } from "./lib/logger";
 
 const apiServerDir = path.resolve(import.meta.dirname ?? __dirname, "..");
 const uploadsDir = path.resolve(apiServerDir, "uploads");
+const frontendDir = path.resolve(apiServerDir, "..", "detect-app", "dist", "public");
 
 const app: Express = express();
 
@@ -15,16 +16,10 @@ app.use(
     logger,
     serializers: {
       req(req) {
-        return {
-          id: req.id,
-          method: req.method,
-          url: req.url?.split("?")[0],
-        };
+        return { id: req.id, method: req.method, url: req.url?.split("?")[0] };
       },
       res(res) {
-        return {
-          statusCode: res.statusCode,
-        };
+        return { statusCode: res.statusCode };
       },
     },
   }),
@@ -34,7 +29,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/uploads", express.static(uploadsDir));
-
 app.use("/api", router);
+
+// Serve built frontend
+app.use(express.static(frontendDir));
+
+// SPA fallback — all non-API routes return index.html
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(frontendDir, "index.html"));
+});
 
 export default app;

@@ -1,0 +1,42 @@
+FROM node:20-slim
+
+# System dependencies for onnxruntime-node, sharp, esbuild
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libc6 libstdc++6 libgcc-s1 libcurl4 openssl \
+    python3 make g++ \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install workspace dependencies
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY lib/ ./lib/
+COPY artifacts/api-server/ ./artifacts/api-server/
+COPY artifacts/detect-app/ ./artifacts/detect-app/
+
+RUN corepack enable \
+  && pnpm install --frozen-lockfile
+
+# Build backend (esbuild → artifacts/api-server/dist/index.mjs)
+RUN cd artifacts/api-server && pnpm run build
+
+# Build frontend (Vite → artifacts/detect-app/dist/public)
+# PORT/BASE_PATH are required by vite.config.ts at build time
+RUN cd artifacts/detect-app \
+  && PORT=7860 BASE_PATH=/ pnpm run build
+
+# ONNX models (kept in workspace, persisted by HF Spaces)
+COPY artifacts/api-server/models/ ./artifacts/api-server/models/
+
+# Push DB schema (no-op if tables already exist)
+RUN pnpm --filter db push || true
+
+# HF Spaces uses port 7860 by default
+EXPOSE 7860
+
+ENV PORT=7860 \
+    NODE_ENV=production \
+    BASE_PATH=/
+
+# Express serves API routes + static frontend (SPA fallback in app.ts)
+CMD ["node", "--enable-source-maps", "./artifacts/api-server/dist/index.mjs"]
