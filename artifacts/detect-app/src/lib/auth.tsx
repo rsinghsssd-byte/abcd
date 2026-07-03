@@ -46,7 +46,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error || "Signup failed"); }
+    if (!res.ok) {
+      let msg = "Signup failed";
+      try { const e = await res.json(); msg = e.error || msg; } catch { msg = `Server error (${res.status})`; }
+      throw new Error(msg);
+    }
     const data = await res.json();
     setUser(data.user);
     setToken(data.token);
@@ -61,7 +65,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error || "Signin failed"); }
+    if (!res.ok) {
+      let msg = "Signin failed";
+      try { const e = await res.json(); msg = e.error || msg; } catch { msg = `Server error (${res.status})`; }
+      throw new Error(msg);
+    }
     const data = await res.json();
     setUser(data.user);
     setToken(data.token);

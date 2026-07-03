@@ -5,13 +5,19 @@ import { useAuth } from "@/lib/auth";
 type Message = { role: "user" | "assistant"; content: string };
 
 function speak(text: string) {
-  if (typeof window === "undefined" || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.rate = 1.0;
-  u.pitch = 1.0;
-  u.volume = 1;
-  window.speechSynthesis.speak(u);
+  if (typeof window === "undefined") return;
+  const synth = window.speechSynthesis;
+  if (!synth || !text) return;
+  try {
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1.0;
+    u.pitch = 1.0;
+    u.volume = 1;
+    synth.speak(u);
+  } catch {
+    // TTS not available (e.g., incognito restrictions) — fail silently
+  }
 }
 
 export default function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
@@ -22,10 +28,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
   const [isLoading, setIsLoading] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
-
-  useEffect(() => {
-    speak(messages[0].content);
-  }, []);
+  const [hasSpokenGreeting, setHasSpokenGreeting] = useState(false);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -39,6 +42,11 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
     setMessages(newMessages);
     setIsLoading(true);
 
+    if (!hasSpokenGreeting && messages[0]?.content) {
+      speak(messages[0].content);
+      setHasSpokenGreeting(true);
+    }
+
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -46,11 +54,13 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
         body: JSON.stringify({ message: msg, userContext: user ? { username: user.username, scanCount: 0 } : undefined }),
       });
       const data = await res.json();
-      setMessages([...newMessages, { role: "assistant", content: data.reply || "Got it!" }]);
-      speak(data.reply || "Got it!");
+      const reply = data.reply || "Got it!";
+      setMessages([...newMessages, { role: "assistant", content: reply }]);
+      speak(reply);
     } catch {
-      setMessages([...newMessages, { role: "assistant", content: "Ready when you are! Upload a photo to get started." }]);
-      speak("Ready when you are! Upload a photo to get started.");
+      const fallback = "Ready when you are! Upload a photo to get started.";
+      setMessages([...newMessages, { role: "assistant", content: fallback }]);
+      speak(fallback);
     }
     setIsLoading(false);
   };
