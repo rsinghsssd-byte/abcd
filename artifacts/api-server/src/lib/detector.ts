@@ -2,7 +2,11 @@ import sharp, { type OverlayOptions } from "sharp";
 import { v4 as uuidv4 } from "uuid";
 import fs from "node:fs";
 import path from "node:path";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import type { DetectedObject, DetectionCounts } from "@workspace/db";
+
+const execFileAsync = promisify(execFile);
 
 type Severity = "low" | "medium" | "high" | "critical";
 
@@ -375,7 +379,14 @@ export async function runDetection(
   const hasPotholeNet = isModelAvailable(POTHOLENET_CFG);
   const hasLitterCam = isModelAvailable(LITTERCAM_CFG);
 
-  const original = await sharp(inputPath).toBuffer();
+  let targetImagePath = inputPath;
+  if (_mediaType === "video") {
+    const tempFrame = inputPath + ".frame.jpg";
+    await execFileAsync("ffmpeg", ["-y", "-i", inputPath, "-vframes", "1", "-f", "image2", tempFrame]);
+    targetImagePath = tempFrame;
+  }
+
+  const original = await sharp(targetImagePath).toBuffer();
   let objects: DetectedObject[] = [];
 
   if (hasLitterCam) {
@@ -390,12 +401,12 @@ export async function runDetection(
 
   objects = deduplicateObjects(objects);
 
-  const imgMeta = await sharp(inputPath).metadata();
+  const imgMeta = await sharp(targetImagePath).metadata();
   const imgW = imgMeta.width ?? 640;
   const imgH = imgMeta.height ?? 480;
 
-  await annotateImage(inputPath, annotatedPath, objects, imgW, imgH);
-  await sharp(inputPath).resize(400, 300, { fit: "cover" }).jpeg({ quality: 80 }).toFile(thumbnailPath);
+  await annotateImage(targetImagePath, annotatedPath, objects, imgW, imgH);
+  await sharp(targetImagePath).resize(400, 300, { fit: "cover" }).jpeg({ quality: 80 }).toFile(thumbnailPath);
 
   return {
     objects,

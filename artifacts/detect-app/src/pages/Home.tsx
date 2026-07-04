@@ -57,6 +57,10 @@ export default function Home() {
       toast({ title: "Invalid file", description: "Please select an image or video file.", variant: "destructive" });
       return;
     }
+    if (selectedFile.size > 50 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Maximum file size is 50MB.", variant: "destructive" });
+      return;
+    }
     setFile(selectedFile);
     setResult(null);
   };
@@ -164,7 +168,7 @@ export default function Home() {
                     </motion.div>
                     <h3 className="text-xl font-serif font-bold text-stone-800 mb-2">Drop road media here</h3>
                     <p className="text-stone-500 text-sm mb-6 max-w-sm font-serif italic">
-                      Dashboard footage, mobile captures, or static images — JPEG, PNG, MP4 supported
+                      Dashboard footage, mobile captures, or static images — JPEG, PNG, MP4 supported (Max 50MB)
                     </p>
                     <motion.button
                       whileHover={{ scale: 1.02 }}

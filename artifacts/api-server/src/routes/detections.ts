@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, desc, count, sql } from "drizzle-orm";
-import { db, detectionsTable } from "@workspace/db";
+import { db, detectionsTable, usersTable } from "@workspace/db";
 import {
   ListDetectionsQueryParams,
   GetDetectionParams,
@@ -50,23 +50,32 @@ router.get("/detections", requireAuth, async (req, res): Promise<void> => {
   }
 });
 
-router.get("/detections/map", requireAuth, async (req, res): Promise<void> => {
+router.get("/detections/map", async (req, res): Promise<void> => {
   try {
-    const uid = req.userId as number;
     const rows = await db
-      .select()
+      .select({
+        detection: detectionsTable,
+        reporterName: usersTable.displayName,
+        reporterUsername: usersTable.username,
+      })
       .from(detectionsTable)
-      .where(and(eq(detectionsTable.userId, uid), sql`${detectionsTable.latitude} IS NOT NULL`))
+      .leftJoin(usersTable, eq(detectionsTable.userId, usersTable.id))
+      .where(sql`${detectionsTable.latitude} IS NOT NULL`)
       .orderBy(desc(detectionsTable.createdAt));
 
-    res.json(rows.map(r => ({ ...r, lat: r.latitude, lon: r.longitude })));
+    res.json(rows.map(r => ({ 
+      ...r.detection, 
+      lat: r.detection.latitude, 
+      lon: r.detection.longitude,
+      reporterName: r.reporterName || r.reporterUsername || 'Anonymous'
+    })));
   } catch (err) {
     req.log.error({ err }, "Failed to load map detections");
     res.status(500).json({ error: "Failed to load map detections" });
   }
 });
 
-router.get("/detections/:id", requireAuth, async (req, res): Promise<void> => {
+router.get("/detections/:id", async (req, res): Promise<void> => {
   const params = GetDetectionParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -76,7 +85,7 @@ router.get("/detections/:id", requireAuth, async (req, res): Promise<void> => {
   const [detection] = await db
     .select()
     .from(detectionsTable)
-    .where(and(eq(detectionsTable.id, params.data.id), eq(detectionsTable.userId, req.userId as number)));
+    .where(eq(detectionsTable.id, params.data.id));
 
   if (!detection) {
     res.status(404).json({ error: "Detection not found" });

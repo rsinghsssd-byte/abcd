@@ -41,7 +41,7 @@ const SEVERITY_ICONS = {
   critical: createMarkerIcon("critical"),
 };
 
-function ClusterLayer({ detections }: { detections: Array<{ id: number; lat: number; lon: number; severity: string; filename: string; counts: { total: number }; thumbnailUrl?: string | null }> }) {
+function ClusterLayer({ detections }: { detections: Array<{ id: number; lat: number; lon: number; severity: string; filename: string; counts: { total: number }; thumbnailUrl?: string | null; reporterName?: string }> }) {
   const map = useMap();
 
   useEffect(() => {
@@ -86,6 +86,7 @@ function ClusterLayer({ detections }: { detections: Array<{ id: number; lat: num
           <div style="font-family:'Source Serif 4',serif;font-size:12px;min-width:160px;padding:4px;">
             ${imgTag}
             <p style="font-weight:600;margin:0 0 4px;color:#444;">${safeName}</p>
+            ${d.reporterName ? `<p style="margin:0 0 4px;font-size:11px;color:#0891b2;">By: ${d.reporterName}</p>` : ""}
             <p style="margin:0 0 2px;font-size:11px;color:#666;">
               Severity: <strong style="color:${severityColor}">${(d.severity ?? "unknown").toUpperCase()}</strong>
             </p>
@@ -172,6 +173,7 @@ export default function MapPage() {
         filename: d.filename,
         counts: d.counts,
         thumbnailUrl: d.thumbnailUrl,
+        reporterName: (d as any).reporterName,
       }));
   }, [detections]);
 
