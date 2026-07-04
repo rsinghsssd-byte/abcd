@@ -21,6 +21,7 @@ const CLASS_CHIPS = {
 
 export default function History() {
   const [filter, setFilter] = useState<"all" | "image" | "video">("all");
+  const [brokenImages, setBrokenImages] = useState<Set<number>>(new Set());
   const { data, isLoading, error } = useListDetections({ mediaType: filter });
   const deleteDetection = useDeleteDetection();
   const queryClient = useQueryClient();
@@ -119,8 +120,9 @@ export default function History() {
                       {/* Image */}
                       <div className="relative aspect-video overflow-hidden"
                         style={{ background: "hsl(40 30% 90%)" }}>
-                        {item.thumbnailUrl ? (
+                        {item.thumbnailUrl && !brokenImages.has(item.id) ? (
                           <img src={item.thumbnailUrl} alt={item.filename}
+                            onError={() => setBrokenImages((prev) => new Set(prev).add(item.id))}
                             className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-stone-400 font-serif text-xs italic">
