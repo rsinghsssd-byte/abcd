@@ -48,9 +48,10 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
     }
 
     try {
+      const token = localStorage.getItem("roadscan_token");
       const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(token ? { "Authorization": `Bearer ${token}` } : {}) },
         body: JSON.stringify({ message: msg }),
       });
       const data = await res.json();
@@ -68,9 +69,10 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
   const skipOnboarding = async () => {
     try {
       if (user?.id) {
+        const token = localStorage.getItem("roadscan_token");
         await fetch(`/api/users/${user.id}`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...(token ? { "Authorization": `Bearer ${token}` } : {}) },
           body: JSON.stringify({ onboardingCompleted: true }),
         });
       }
