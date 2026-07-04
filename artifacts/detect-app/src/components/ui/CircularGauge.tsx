@@ -25,6 +25,7 @@ export function CircularGauge({
   const circumference = 2 * Math.PI * radius;
   const clamped = Math.min(Math.max(value / max, 0), 1);
   const offset = circumference * (1 - clamped);
+  const pct = Math.round(value);
 
   return (
     <motion.div
@@ -69,8 +70,13 @@ export function CircularGauge({
           </motion.span>
         </div>
       </div>
-      <span className="text-[10px] font-serif font-semibold text-stone-500 tracking-wide uppercase">
-        {label}
+      <span className="text-center leading-tight" style={{ maxWidth: size + 16 }}>
+        <span className="text-[10px] font-serif font-semibold text-stone-500 tracking-wide uppercase block">
+          {label}
+        </span>
+        <span className="text-[10px] font-mono font-bold block" style={{ color }}>
+          {count} found · {pct}%
+        </span>
       </span>
     </motion.div>
   );

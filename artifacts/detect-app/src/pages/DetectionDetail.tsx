@@ -3,6 +3,7 @@ import { useParams, Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, Calendar, FileType, Target } from "lucide-react";
 import { CircularGauge } from "@/components/ui/CircularGauge";
+import { safeCounts } from "@/lib/counts";
 import { SeverityBadge } from "./Dashboard";
 
 const CLASS_COLORS: Record<string, string> = {
@@ -40,7 +41,7 @@ export default function DetectionDetail() {
     );
   }
 
-  const counts = detection.counts ?? { pothole: 0, plastic_waste: 0, other_litter: 0, total: 0 };
+  const counts = safeCounts(detection.counts);
   const objects = detection.objects ?? [];
 
   return (

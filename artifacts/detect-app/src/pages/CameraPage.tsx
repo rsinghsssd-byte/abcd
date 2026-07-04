@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { getListDetectionsQueryKey, getGetStatsQueryKey, getGetRecentDetectionsQueryKey } from "@workspace/api-client-react";
 import { CircularGauge } from "@/components/ui/CircularGauge";
+import { safeCounts } from "@/lib/counts";
 
 type DetectedObject = {
   id: string;
@@ -298,10 +299,10 @@ export default function CameraPage() {
               />
             )}
 
-            {cameraOn && result && result.counts.total > 0 && (
+            {cameraOn && result && safeCounts(result.counts).total > 0 && (
               <div className="absolute bottom-3 right-3 bg-black/70 border border-white/20 px-3 py-2">
                 <p className="font-mono text-xs text-white">
-                  {result.counts.total} object{result.counts.total !== 1 ? "s" : ""} detected
+                  {safeCounts(result.counts).total} object{safeCounts(result.counts).total !== 1 ? "s" : ""} detected
                 </p>
               </div>
             )}
@@ -441,7 +442,8 @@ export default function CameraPage() {
 
                 <div className="flex justify-center gap-6 flex-wrap">
                   {(["pothole", "plastic_waste", "other_litter"] as const).map((cls, i) => {
-                    const count = result.counts[cls];
+                    const counts = safeCounts(result.counts);
+                    const count = counts[cls] ?? result.objects.filter((o) => o.className === cls).length;
                     const objectsForClass = result.objects.filter((o) => o.className === cls);
                     const avgConf = objectsForClass.length > 0
                       ? objectsForClass.reduce((sum, o) => sum + o.confidence, 0) / objectsForClass.length * 100
@@ -453,19 +455,19 @@ export default function CameraPage() {
                         size={80}
                         strokeWidth={5}
                         color={CLASS_COLORS[cls]}
-                        label={cls.replace("_", " ")}
+                        label={cls.split("_").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
                         count={count}
                         delay={i * 0.12}
                       />
                     );
                   })}
                   <CircularGauge
-                    value={result.counts.total > 0 ? 100 : 0}
+                    value={safeCounts(result.counts).total > 0 ? 100 : 0}
                     size={80}
                     strokeWidth={5}
                     color="#78716c"
                     label="Total"
-                    count={result.counts.total}
+                    count={safeCounts(result.counts).total}
                     delay={0.36}
                   />
                 </div>

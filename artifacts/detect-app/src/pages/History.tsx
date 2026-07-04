@@ -6,6 +6,7 @@ import { Trash2, Image as ImageIcon, Video, FolderSearch } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { CircularGauge } from "@/components/ui/CircularGauge";
+import { safeCounts } from "@/lib/counts";
 
 const SEV_CONFIG = {
   low:      { color: "#22c55e", border: "border-green-500/40",  bg: "from-green-500/15",  text: "text-green-400",  glow: "rgba(34,197,94,0.3)"   },
@@ -152,10 +153,11 @@ export default function History() {
                           {new Date(item.createdAt).toLocaleString()}
                         </p>
 
-                        {item.counts.total > 0 ? (
+                        {safeCounts(item.counts).total > 0 ? (
                           <div className="flex items-center justify-center gap-3">
                             {(Object.entries(CLASS_GAUGES) as [keyof typeof CLASS_GAUGES, typeof CLASS_GAUGES[keyof typeof CLASS_GAUGES]][]).map(([key, cfg]) => {
-                              const count = item.counts[key as keyof typeof item.counts];
+                              const counts = safeCounts(item.counts);
+                              const count = counts[key as keyof typeof counts] ?? (item.objects ?? []).filter((o: { className: string }) => o.className === key).length;
                               if (!count) return null;
                               const objectsForClass = (item.objects ?? []).filter((o: { className: string }) => o.className === key);
                               const avgConf = objectsForClass.length > 0

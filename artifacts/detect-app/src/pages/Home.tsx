@@ -7,6 +7,7 @@ import { getListDetectionsQueryKey, getGetStatsQueryKey, getGetRecentDetectionsQ
 import type { Detection } from "@workspace/api-zod";
 import { Link } from "wouter";
 import { CircularGauge } from "@/components/ui/CircularGauge";
+import { safeCounts } from "@/lib/counts";
 
 const CLASS_COLORS = {
   pothole:       { color: "#b91c1c", bg: "bg-red-50",     border: "border-red-300", label: "Potholes",     chip: "border-red-300 text-red-700 bg-red-50/80" },
@@ -311,7 +312,8 @@ export default function Home() {
 
                 <div className="flex justify-center gap-6 flex-wrap">
                   {(Object.entries(CLASS_COLORS) as [keyof typeof CLASS_COLORS, typeof CLASS_COLORS[keyof typeof CLASS_COLORS]][]).map(([key, cfg], i) => {
-                    const count = result.counts[key as keyof typeof result.counts] as number;
+                    const counts = safeCounts(result.counts);
+                    const count = counts[key as keyof typeof counts] ?? result.objects.filter((o) => o.className === key).length;
                     const objectsForClass = result.objects.filter((o) => o.className === key);
                     const avgConf = objectsForClass.length > 0
                       ? objectsForClass.reduce((sum, o) => sum + o.confidence, 0) / objectsForClass.length * 100
