@@ -160,6 +160,7 @@
     0 8px 16px rgba(0,0,0,0.02),
     inset 0 0 0 1px rgba(255,255,255,0.6);
   position: relative;
+  isolation: isolate;
   transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 .paper-card-vintage::after {
@@ -167,14 +168,14 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 2;
+  z-index: -1;
   border-radius: inherit;
   background:
-    linear-gradient(75deg, transparent 48%, rgba(0,0,0,0.015) 48.5%, transparent 49%) 10% 20% / 80px 1px no-repeat,
-    linear-gradient(-30deg, transparent 47%, rgba(0,0,0,0.01) 47.5%, transparent 48%) 60% 50% / 120px 1px no-repeat,
-    linear-gradient(45deg, transparent 49%, rgba(0,0,0,0.008) 49.5%, transparent 50%) 30% 75% / 60px 1px no-repeat,
-    linear-gradient(-60deg, transparent 48%, rgba(0,0,0,0.012) 48.5%, transparent 49%) 80% 30% / 100px 1px no-repeat,
-    linear-gradient(15deg, transparent 49%, rgba(0,0,0,0.007) 49.5%, transparent 50%) 50% 90% / 70px 1px no-repeat;
+    linear-gradient(75deg, transparent 48%, rgba(120,113,108,0.12) 48.5%, transparent 49%) 10% 20% / 80px 1px no-repeat,
+    linear-gradient(-30deg, transparent 47%, rgba(120,113,108,0.10) 47.5%, transparent 48%) 60% 50% / 120px 1px no-repeat,
+    linear-gradient(45deg, transparent 49%, rgba(120,113,108,0.08) 49.5%, transparent 50%) 30% 75% / 60px 1px no-repeat,
+    linear-gradient(-60deg, transparent 48%, rgba(120,113,108,0.11) 48.5%, transparent 49%) 80% 30% / 100px 1px no-repeat,
+    linear-gradient(15deg, transparent 49%, rgba(120,113,108,0.07) 49.5%, transparent 50%) 50% 90% / 70px 1px no-repeat;
 }
 .paper-card-vintage:hover {
   box-shadow:
@@ -198,6 +199,7 @@
     0 16px 48px rgba(0,0,0,0.02),
     inset 0 0 0 1px rgba(255,255,255,0.5);
   position: relative;
+  isolation: isolate;
 }
 
 /* Paper card with stitch border */
@@ -211,6 +213,7 @@
     inset 0 0 0 3px hsl(40 30% 94%),
     inset 0 0 0 4px hsl(30 10% 75%);
   position: relative;
+  isolation: isolate;
 }
 
 /* Lined paper background */
@@ -231,14 +234,16 @@
 /* Paper texture overlay */
 .paper-texture {
   position: relative;
+  isolation: isolate;
 }
 .paper-texture::before {
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.02;
+  opacity: 0.03;
   background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.5'/%3E%3C/svg%3E");
   pointer-events: none;
+  z-index: -1;
 }
 
 /* Stitch border (dashed with offset shadow) */
@@ -315,7 +320,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 2;
+  z-index: -1;
   background:
     /* Thin scratch lines at various angles */
     linear-gradient(75deg, transparent 48%, rgba(120,113,108,0.18) 48.5%, transparent 49%) 10% 20% / 80px 1px no-repeat,
@@ -339,7 +344,7 @@
   border-left: 1px solid hsl(30 10% 78%);
   border-top: 1px solid hsl(30 10% 78%);
   pointer-events: none;
-  z-index: 2;
+  z-index: -1;
 }
 
 /* Aged paper stain — visible circular discolorations */
@@ -348,7 +353,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 1;
+  z-index: -1;
   background:
     radial-gradient(ellipse at 15% 25%, rgba(180, 150, 100, 0.18) 0%, transparent 50%),
     radial-gradient(ellipse at 85% 60%, rgba(160, 130, 80, 0.14) 0%, transparent 40%),
@@ -360,7 +365,7 @@
   content: '';
   position: absolute;
   pointer-events: none;
-  z-index: 2;
+  z-index: -1;
   width: 100%;
   height: 100%;
   top: 0;
@@ -382,7 +387,7 @@
   width: 2px;
   background: linear-gradient(180deg, rgba(80, 60, 30, 0.15), rgba(80, 60, 30, 0.05) 60%, transparent);
   pointer-events: none;
-  z-index: 2;
+  z-index: -1;
 }
 
 /* Underline squiggle — hand-drawn underline effect */
