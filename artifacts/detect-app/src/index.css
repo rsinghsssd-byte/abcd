@@ -148,7 +148,7 @@
   }
 }
 
-/* Vintage paper card — Razorpay-grade layered shadow */
+/* Vintage paper card */
 .paper-card-vintage {
   background: linear-gradient(180deg, hsl(40 30% 96%) 0%, hsl(40 25% 90%) 100%);
   border: 1px solid hsl(30 10% 78%);
@@ -160,7 +160,6 @@
     0 8px 16px rgba(0,0,0,0.02),
     inset 0 0 0 1px rgba(255,255,255,0.6);
   position: relative;
-  isolation: isolate;
   transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 .paper-card-vintage::after {
@@ -168,14 +167,16 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: -1;
+  z-index: 1;
   border-radius: inherit;
   background:
-    linear-gradient(75deg, transparent 48%, rgba(120,113,108,0.12) 48.5%, transparent 49%) 10% 20% / 80px 1px no-repeat,
-    linear-gradient(-30deg, transparent 47%, rgba(120,113,108,0.10) 47.5%, transparent 48%) 60% 50% / 120px 1px no-repeat,
-    linear-gradient(45deg, transparent 49%, rgba(120,113,108,0.08) 49.5%, transparent 50%) 30% 75% / 60px 1px no-repeat,
-    linear-gradient(-60deg, transparent 48%, rgba(120,113,108,0.11) 48.5%, transparent 49%) 80% 30% / 100px 1px no-repeat,
-    linear-gradient(15deg, transparent 49%, rgba(120,113,108,0.07) 49.5%, transparent 50%) 50% 90% / 70px 1px no-repeat;
+    linear-gradient(75deg, transparent 48%, rgba(120,113,108,0.22) 48.5%, transparent 49%) 10% 20% / 80px 1px no-repeat,
+    linear-gradient(-30deg, transparent 47%, rgba(120,113,108,0.18) 47.5%, transparent 48%) 60% 50% / 120px 1px no-repeat,
+    linear-gradient(45deg, transparent 49%, rgba(120,113,108,0.14) 49.5%, transparent 50%) 30% 75% / 60px 1px no-repeat,
+    linear-gradient(-60deg, transparent 48%, rgba(120,113,108,0.20) 48.5%, transparent 49%) 80% 30% / 100px 1px no-repeat,
+    linear-gradient(15deg, transparent 49%, rgba(120,113,108,0.12) 49.5%, transparent 50%) 50% 90% / 70px 1px no-repeat,
+    linear-gradient(80deg, transparent 49.5%, rgba(59,130,246,0.18) 49.8%, transparent 50%) 25% 60% / 50px 1px no-repeat,
+    linear-gradient(-15deg, transparent 48%, rgba(59,130,246,0.14) 48.5%, transparent 49%) 70% 15% / 90px 1px no-repeat;
 }
 .paper-card-vintage:hover {
   box-shadow:
@@ -199,7 +200,6 @@
     0 16px 48px rgba(0,0,0,0.02),
     inset 0 0 0 1px rgba(255,255,255,0.5);
   position: relative;
-  isolation: isolate;
 }
 
 /* Paper card with stitch border */
@@ -213,7 +213,6 @@
     inset 0 0 0 3px hsl(40 30% 94%),
     inset 0 0 0 4px hsl(30 10% 75%);
   position: relative;
-  isolation: isolate;
 }
 
 /* Lined paper background */
@@ -234,16 +233,15 @@
 /* Paper texture overlay */
 .paper-texture {
   position: relative;
-  isolation: isolate;
 }
 .paper-texture::before {
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.03;
+  opacity: 0.04;
   background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.5'/%3E%3C/svg%3E");
   pointer-events: none;
-  z-index: -1;
+  z-index: 1;
 }
 
 /* Stitch border (dashed with offset shadow) */
@@ -252,19 +250,18 @@
   box-shadow: 0 0 0 1px hsl(40 30% 94%);
 }
 
-/* Vintage button */
-.btn-vintage {
-  background: hsl(30 10% 25%);
-  color: hsl(40 30% 92%);
-  border: 1px solid hsl(30 10% 20%);
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  font-family: 'Source Serif 4', serif;
-  font-size: 0.875rem;
-  transition: all 0.15s ease;
-}
-.btn-vintage:hover {
-  background: hsl(30 10% 20%);
+/* Blue ink scratches — distinct blue pen-like marks */
+.blue-ink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    linear-gradient(60deg, transparent 49%, rgba(59,130,246,0.22) 49.5%, transparent 50%) 15% 25% / 100px 1px no-repeat,
+    linear-gradient(-45deg, transparent 48%, rgba(59,130,246,0.18) 48.5%, transparent 49%) 65% 55% / 140px 1px no-repeat,
+    linear-gradient(30deg, transparent 49.5%, rgba(59,130,246,0.25) 49.8%, transparent 50%) 40% 75% / 80px 1px no-repeat,
+    linear-gradient(-70deg, transparent 48%, rgba(59,130,246,0.15) 48.5%, transparent 49%) 80% 20% / 110px 1px no-repeat;
 }
 
 /* Tag/pill vintage */
@@ -344,7 +341,7 @@
   border-left: 1px solid hsl(30 10% 78%);
   border-top: 1px solid hsl(30 10% 78%);
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
 }
 
 /* Aged paper stain — visible circular discolorations */
@@ -353,11 +350,11 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
   background:
-    radial-gradient(ellipse at 15% 25%, rgba(180, 150, 100, 0.18) 0%, transparent 50%),
-    radial-gradient(ellipse at 85% 60%, rgba(160, 130, 80, 0.14) 0%, transparent 40%),
-    radial-gradient(ellipse at 45% 80%, rgba(140, 110, 60, 0.12) 0%, transparent 35%);
+    radial-gradient(ellipse at 15% 25%, rgba(180, 150, 100, 0.22) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 60%, rgba(160, 130, 80, 0.18) 0%, transparent 40%),
+    radial-gradient(ellipse at 45% 80%, rgba(140, 110, 60, 0.15) 0%, transparent 35%);
 }
 
 /* Ink splatter — visible dots simulating dried ink */
@@ -365,16 +362,16 @@
   content: '';
   position: absolute;
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
   width: 100%;
   height: 100%;
   top: 0;
   left: 0;
   box-shadow:
-    4px 12px 0 -1px rgba(80, 60, 30, 0.12),
-    8px 24px 0 -2px rgba(80, 60, 30, 0.08),
-    92% 5% 0 -1px rgba(80, 60, 30, 0.10),
-    95% 18% 0 -2px rgba(80, 60, 30, 0.06);
+    4px 12px 0 -1px rgba(80, 60, 30, 0.18),
+    8px 24px 0 -2px rgba(80, 60, 30, 0.12),
+    92% 5% 0 -1px rgba(80, 60, 30, 0.14),
+    95% 18% 0 -2px rgba(80, 60, 30, 0.08);
 }
 
 /* Pen margin line — vertical ink line like a margin note */
@@ -385,9 +382,9 @@
   top: 12px;
   bottom: 12px;
   width: 2px;
-  background: linear-gradient(180deg, rgba(80, 60, 30, 0.15), rgba(80, 60, 30, 0.05) 60%, transparent);
+  background: linear-gradient(180deg, rgba(80, 60, 30, 0.22), rgba(80, 60, 30, 0.06) 60%, transparent);
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
 }
 
 /* Underline squiggle — hand-drawn underline effect */

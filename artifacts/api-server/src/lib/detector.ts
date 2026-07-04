@@ -153,13 +153,29 @@ async function detectWithOnnx(
     const w = raw[2 * numBoxes + i];
     const h = raw[3 * numBoxes + i];
 
+    const maxRaw = Math.max(cx, cy, w, h);
+    const normalized = maxRaw <= 1.0;
+
+    let nx: number, ny: number, nw: number, nh: number;
+    if (normalized) {
+      nx = cx - w / 2;
+      ny = cy - h / 2;
+      nw = w;
+      nh = h;
+    } else {
+      nx = (cx - w / 2) / cfg.inputSize;
+      ny = (cy - h / 2) / cfg.inputSize;
+      nw = w / cfg.inputSize;
+      nh = h / cfg.inputSize;
+    }
+
     candidates.push({
       className: mapped,
       confidence: bestScore,
-      x: (cx - w / 2) / cfg.inputSize,
-      y: (cy - h / 2) / cfg.inputSize,
-      w: w / cfg.inputSize,
-      h: h / cfg.inputSize,
+      x: Math.max(0, Math.min(0.95, nx)),
+      y: Math.max(0, Math.min(0.95, ny)),
+      w: Math.max(0.02, Math.min(0.98, nw)),
+      h: Math.max(0.02, Math.min(0.98, nh)),
     });
   }
 
