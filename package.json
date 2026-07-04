@@ -10,6 +10,11 @@
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },
   "private": true,
+  "pnpm": {
+    "overrides": {
+      "path-to-regexp": "8.3.0"
+    }
+  },
   "dependencies": {
     "@tanstack/react-query": "^5.90.21"
   },
