@@ -95,9 +95,9 @@ export default function History() {
       ) : !data || data.items.length === 0 ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           className="py-24 rounded-2xl flex flex-col items-center justify-center text-center border-2 border-dashed border-border">
-          <FolderSearch className="w-12 h-12 text-muted-foreground/40 mb-4" />
-          <h3 className="text-xl font-bold text-muted-foreground mb-2">No Records Found</h3>
-          <p className="text-muted-foreground/70 font-mono text-sm mb-6 max-w-md">
+          <FolderSearch className="w-12 h-12 text-stone-400 mb-4" />
+          <h3 className="text-xl font-bold text-stone-700 mb-2">No Records Found</h3>
+          <p className="text-stone-500 font-mono text-sm mb-6 max-w-md">
             No detections match the current filter. Upload media to generate records.
           </p>
           <Link href="/">
