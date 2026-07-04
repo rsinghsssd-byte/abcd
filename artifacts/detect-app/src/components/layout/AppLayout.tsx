@@ -170,7 +170,12 @@ export function AppLayout({ children }: AppLayoutProps) {
       </AnimatePresence>
 
       {/* Main content — always full width */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden h-full">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden h-full relative">
+        {/* Blurred background image for all pages after login */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center pointer-events-none filter blur-sm scale-105 opacity-25" 
+          style={{ backgroundImage: "url('/scribble_bg.jpg')" }}
+        />
         <div className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 px-4 pt-14 pb-4 md:px-8 md:pt-8 md:pb-8">
           <div className="w-full h-full">{children}</div>
         </div>
