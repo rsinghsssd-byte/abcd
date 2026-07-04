@@ -1,7 +1,10 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, CameraOff, Zap, AlertTriangle, RefreshCw } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Camera, CameraOff, Zap, AlertTriangle, RefreshCw, ScanLine } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getListDetectionsQueryKey, getGetStatsQueryKey, getGetRecentDetectionsQueryKey } from "@workspace/api-client-react";
+import { CircularGauge } from "@/components/ui/CircularGauge";
 
 type DetectedObject = {
   id: string;
@@ -11,6 +14,7 @@ type DetectedObject = {
 };
 
 type ScanResult = {
+  id: number;
   objects: DetectedObject[];
   counts: { pothole: number; plastic_waste: number; other_litter: number; total: number };
   processingTimeMs: number;
@@ -44,6 +48,7 @@ export default function CameraPage() {
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
   const [scanning, setScanning] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
@@ -169,7 +174,10 @@ export default function CameraPage() {
     setScanning(false);
     setScanningInProgress(false);
     clearOverlay();
-  }, []);
+    queryClient.invalidateQueries({ queryKey: getListDetectionsQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetStatsQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetRecentDetectionsQueryKey() });
+  }, [queryClient]);
 
   useEffect(() => {
     return () => {
@@ -214,30 +222,37 @@ export default function CameraPage() {
 
   return (
     <div className="space-y-6 h-full">
-      <div>
-        <h1 className="text-3xl font-bold font-mono tracking-tight">Live Camera</h1>
-        <p className="text-muted-foreground font-mono text-sm mt-1">
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-0.5 h-7" style={{ background: "hsl(30 10% 50%)" }} />
+          <h1 className="text-3xl font-serif font-bold text-stone-800 tracking-tight">
+            Live Camera
+          </h1>
+        </div>
+        <p className="text-stone-500 font-serif text-sm ml-4 italic">
           Real-time detection from device camera feed
         </p>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
-          <div ref={videoContainerRef} className="border border-border bg-card relative overflow-hidden" style={{ aspectRatio: "16/9" }}>
+          <div ref={videoContainerRef} className="paper-card-vintage relative overflow-hidden" style={{ aspectRatio: "16/9" }}>
             {!cameraOn && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background">
-                <div className="w-16 h-16 border-2 border-border flex items-center justify-center">
-                  <Camera className="w-8 h-8 text-muted-foreground" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-stone-50">
+                <div className="w-16 h-16 flex items-center justify-center" style={{ border: "1px solid hsl(30 10% 78%)", background: "hsl(40 30% 94%)" }}>
+                  <Camera className="w-8 h-8 text-stone-400" />
                 </div>
-                <p className="font-mono text-sm text-muted-foreground">Camera inactive</p>
+                <p className="font-serif text-sm text-stone-500">Camera inactive</p>
                 {error && (
-                  <p className="font-mono text-xs text-red-500 max-w-xs text-center px-4">{error}</p>
+                  <p className="font-serif text-xs text-red-600 max-w-xs text-center px-4 italic">{error}</p>
                 )}
                 <button
                   onClick={startCamera}
-                  className="border border-border px-4 py-2 font-mono text-sm hover:bg-accent transition-colors"
+                  className="px-4 py-2 font-serif text-sm font-semibold text-stone-100"
+                  style={{ background: "hsl(30 10% 25%)" }}
                 >
-                  ENABLE CAMERA
+                  Enable Camera
                 </button>
               </div>
             )}
@@ -291,153 +306,194 @@ export default function CameraPage() {
 
           <div className="flex gap-3">
             {!cameraOn ? (
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={startCamera}
-                className="flex items-center gap-2 border border-border px-4 py-2 font-mono text-sm hover:bg-accent transition-colors"
+                className="flex items-center gap-2 px-4 py-2 font-serif text-sm font-semibold text-stone-100"
+                style={{ background: "hsl(30 10% 25%)" }}
               >
                 <Camera className="w-4 h-4" />
-                START CAMERA
-              </button>
+                Enable Camera
+              </motion.button>
             ) : (
               <>
                 {!scanning ? (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={startScanning}
-                    className="flex items-center gap-2 bg-foreground text-background px-4 py-2 font-mono text-sm hover:opacity-90 transition-opacity"
+                    className="flex items-center gap-2 px-4 py-2 font-serif text-sm font-semibold text-stone-100"
+                    style={{ background: "hsl(30 10% 25%)" }}
                   >
                     <Zap className="w-4 h-4" />
-                    START SCANNING
-                  </button>
+                    Start Scanning
+                  </motion.button>
                 ) : (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={stopScanning}
-                    className="flex items-center gap-2 border border-red-500 text-red-600 px-4 py-2 font-mono text-sm hover:bg-red-50 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 font-serif text-sm font-semibold"
+                    style={{ color: "#b91c1c", border: "1px solid #b91c1c40", background: "#b91c1c10" }}
                   >
                     <CameraOff className="w-4 h-4" />
-                    STOP SCANNING
-                  </button>
+                    Stop Scanning
+                  </motion.button>
                 )}
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={stopCamera}
-                  className="flex items-center gap-2 border border-border px-4 py-2 font-mono text-sm hover:bg-accent transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 font-serif text-sm text-stone-600 border border-stone-300/70 hover:bg-stone-100 transition-colors"
                 >
-                  CLOSE CAMERA
-                </button>
+                  Close Camera
+                </motion.button>
               </>
             )}
           </div>
         </div>
 
         <div className="space-y-4">
-          <div className="border border-border bg-card p-4">
-            <h3 className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-3">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="paper-card-vintage p-4"
+          >
+            <h3 className="font-mono text-[10px] uppercase tracking-[0.15em] text-stone-500 mb-4">
               Detection Engine
             </h3>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center font-mono text-sm">
-                <span className="text-muted-foreground">Model</span>
-                <span className="font-medium">
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-serif text-stone-500">Model</span>
+                <span className="text-xs font-mono font-medium text-stone-700">
                   {result?.aiPowered ? "ONNX Models" : "Active"}
                 </span>
               </div>
-              <div className="flex justify-between items-center font-mono text-sm">
-                <span className="text-muted-foreground">Interval</span>
-                <span className="font-medium">2.0s</span>
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-serif text-stone-500">Interval</span>
+                <span className="text-xs font-mono font-medium text-stone-700">2.0s</span>
               </div>
-              <div className="flex justify-between items-center font-mono text-sm">
-                <span className="text-muted-foreground">Frames analyzed</span>
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-serif text-stone-500">Frames analyzed</span>
                 <motion.span
                   key={frameCount}
                   initial={{ scale: 1.2 }}
                   animate={{ scale: 1 }}
-                  className="font-medium tabular-nums"
+                  className="text-xs font-mono font-medium tabular-nums text-stone-700"
                 >
                   {frameCount}
                 </motion.span>
               </div>
               {result && (
-                <div className="flex justify-between items-center font-mono text-sm">
-                  <span className="text-muted-foreground">Last latency</span>
-                  <span className="font-medium tabular-nums">{result.processingTimeMs}ms</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-serif text-stone-500">Last latency</span>
+                  <span className="text-xs font-mono font-medium tabular-nums text-stone-700">{result.processingTimeMs}ms</span>
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
 
           {!result?.aiPowered && cameraOn && (
-            <div className="border border-stone-300 bg-stone-50 p-3">
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="stitch-border p-3 bg-stone-50/80"
+            >
               <div className="flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 text-stone-500 shrink-0 mt-0.5" />
-                <p className="font-serif text-xs text-stone-600 italic">
+                <AlertTriangle className="w-4 h-4 text-stone-400 shrink-0 mt-0.5" />
+                <p className="font-serif text-xs text-stone-500 italic">
                   Running local ONNX models for detection.
                 </p>
               </div>
-            </div>
+            </motion.div>
           )}
 
           <AnimatePresence mode="wait">
             {result && (
               <motion.div
                 key={frameCount}
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="border border-border bg-card p-4 space-y-3"
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                className="paper-card-vintage p-4"
               >
-                <div className="flex items-center justify-between">
-                  <h3 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-                    Last Frame
-                  </h3>
-                  <span className={cn("font-mono text-xs border px-2 py-0.5 uppercase", SEVERITY_STYLE[result.severity])}>
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-2">
+                    <ScanLine className="w-4 h-4 text-stone-500" />
+                    <h3 className="font-serif text-sm font-semibold text-stone-700">
+                      Last Frame
+                    </h3>
+                  </div>
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.2 }}
+                    className={cn("font-mono text-[10px] border px-2.5 py-0.5 uppercase font-bold tracking-wider", SEVERITY_STYLE[result.severity])}
+                  >
                     {result.severity}
-                  </span>
+                  </motion.span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  {(["pothole", "plastic_waste", "other_litter"] as const).map((cls) => (
-                    <div key={cls} className="border border-border p-2">
-                      <div className="font-mono text-xs text-muted-foreground uppercase">{cls.replace("_", " ")}</div>
-                      <div
-                        className="font-mono text-xl font-bold"
-                        style={{ color: CLASS_COLORS[cls] }}
-                      >
-                        {result.counts[cls]}
-                      </div>
-                    </div>
-                  ))}
-                  <div className="border border-border p-2">
-                    <div className="font-mono text-xs text-muted-foreground uppercase">Total</div>
-                    <div className="font-mono text-xl font-bold">{result.counts.total}</div>
-                  </div>
+                <div className="flex justify-center gap-6 flex-wrap">
+                  {(["pothole", "plastic_waste", "other_litter"] as const).map((cls, i) => {
+                    const count = result.counts[cls];
+                    const objectsForClass = result.objects.filter((o) => o.className === cls);
+                    const avgConf = objectsForClass.length > 0
+                      ? objectsForClass.reduce((sum, o) => sum + o.confidence, 0) / objectsForClass.length * 100
+                      : 0;
+                    return (
+                      <CircularGauge
+                        key={cls}
+                        value={avgConf}
+                        size={80}
+                        strokeWidth={5}
+                        color={CLASS_COLORS[cls]}
+                        label={cls.replace("_", " ")}
+                        count={count}
+                        delay={i * 0.12}
+                      />
+                    );
+                  })}
+                  <CircularGauge
+                    value={result.counts.total > 0 ? 100 : 0}
+                    size={80}
+                    strokeWidth={5}
+                    color="#78716c"
+                    label="Total"
+                    count={result.counts.total}
+                    delay={0.36}
+                  />
                 </div>
 
                 {result.objects.length > 0 && (
-                  <div className="space-y-1">
-                    {result.objects.map((obj) => (
-                      <div key={obj.id} className="flex items-center justify-between font-mono text-xs py-1 border-b border-border last:border-0">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-2 h-2 rounded-full"
-                            style={{ background: CLASS_COLORS[obj.className] }}
-                          />
-                          <span className="text-muted-foreground">{obj.className.replace(/_/g, " ")}</span>
-                        </div>
-                        <span className="font-medium">{Math.round(obj.confidence * 100)}%</span>
-                      </div>
-                    ))}
-                  </div>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="mt-4 pt-4 border-t border-dashed border-stone-300/60"
+                  >
+                    <p className="font-serif text-[10px] text-stone-400 italic mb-2 text-center">
+                      {result.objects.length} object{result.objects.length !== 1 ? "s" : ""} detected · avg confidence {(result.objects.reduce((s, o) => s + o.confidence, 0) / result.objects.length * 100).toFixed(0)}%
+                    </p>
+                  </motion.div>
                 )}
               </motion.div>
             )}
           </AnimatePresence>
 
           {!result && cameraOn && !scanning && (
-            <div className="border border-dashed border-border p-6 text-center">
-              <RefreshCw className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
-              <p className="font-mono text-xs text-muted-foreground">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="stitch-border p-6 text-center bg-stone-50/50"
+            >
+              <RefreshCw className="w-6 h-6 text-stone-400 mx-auto mb-2" />
+              <p className="font-serif text-xs text-stone-500 italic">
                 Start scanning to see live detections
               </p>
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

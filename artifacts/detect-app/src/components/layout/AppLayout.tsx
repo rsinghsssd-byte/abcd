@@ -49,7 +49,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed md:relative inset-y-0 left-0 z-40 md:z-auto flex flex-col border-r border-stone-300/40 bg-stone-50/80 paper-texture transition-all duration-300",
+          "fixed md:relative inset-y-0 left-0 z-40 md:z-auto flex flex-col paper-card-deep paper-texture transition-all duration-300",
           "w-56",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           desktopOpen ? "md:translate-x-0" : "md:-translate-x-full md:w-0 md:min-w-0 md:border-r-0 md:overflow-hidden"

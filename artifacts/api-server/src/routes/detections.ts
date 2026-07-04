@@ -1,15 +1,16 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, count } from "drizzle-orm";
+import { eq, and, desc, count } from "drizzle-orm";
 import { db, detectionsTable } from "@workspace/db";
 import {
   ListDetectionsQueryParams,
   GetDetectionParams,
   DeleteDetectionParams,
 } from "@workspace/api-zod";
+import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
-router.get("/detections", async (req, res): Promise<void> => {
+router.get("/detections", requireAuth, async (req, res): Promise<void> => {
   try {
     const parsed = ListDetectionsQueryParams.safeParse(req.query);
     if (!parsed.success) {
@@ -19,23 +20,24 @@ router.get("/detections", async (req, res): Promise<void> => {
 
     const { limit = 20, offset = 0, mediaType = "all" } = parsed.data;
 
-    const whereClause =
-      mediaType !== "all"
-        ? eq(detectionsTable.mediaType, mediaType as "image" | "video")
-        : undefined;
+    const conditions: any[] = [eq(detectionsTable.userId, req.userId)];
+    if (mediaType !== "all") {
+      conditions.push(eq(detectionsTable.mediaType, mediaType as "image" | "video"));
+    }
+    const whereClause = and(...conditions);
 
     const [rows, [totalRow]] = await Promise.all([
       db
         .select()
         .from(detectionsTable)
-        .where(whereClause as any)
+        .where(whereClause)
         .orderBy(desc(detectionsTable.createdAt))
         .limit(limit)
         .offset(offset),
       db
         .select({ count: count() })
         .from(detectionsTable)
-        .where(whereClause as any),
+        .where(whereClause),
     ]);
 
     res.json({ items: rows, total: totalRow?.count ?? 0 });
@@ -45,7 +47,7 @@ router.get("/detections", async (req, res): Promise<void> => {
   }
 });
 
-router.get("/detections/:id", async (req, res): Promise<void> => {
+router.get("/detections/:id", requireAuth, async (req, res): Promise<void> => {
   const params = GetDetectionParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -55,7 +57,7 @@ router.get("/detections/:id", async (req, res): Promise<void> => {
   const [detection] = await db
     .select()
     .from(detectionsTable)
-    .where(eq(detectionsTable.id, params.data.id));
+    .where(and(eq(detectionsTable.id, params.data.id), eq(detectionsTable.userId, req.userId)));
 
   if (!detection) {
     res.status(404).json({ error: "Detection not found" });
@@ -65,7 +67,7 @@ router.get("/detections/:id", async (req, res): Promise<void> => {
   res.json(detection);
 });
 
-router.delete("/detections/:id", async (req, res): Promise<void> => {
+router.delete("/detections/:id", requireAuth, async (req, res): Promise<void> => {
   const params = DeleteDetectionParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -74,7 +76,7 @@ router.delete("/detections/:id", async (req, res): Promise<void> => {
 
   const [deleted] = await db
     .delete(detectionsTable)
-    .where(eq(detectionsTable.id, params.data.id))
+    .where(and(eq(detectionsTable.id, params.data.id), eq(detectionsTable.userId, req.userId)))
     .returning();
 
   if (!deleted) {
