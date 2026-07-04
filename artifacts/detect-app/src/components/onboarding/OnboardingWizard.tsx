@@ -66,12 +66,16 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
   };
 
   const skipOnboarding = async () => {
-    if (user?.id) {
-      await fetch(`/api/users/${user.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ onboardingCompleted: true }),
-      });
+    try {
+      if (user?.id) {
+        await fetch(`/api/users/${user.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ onboardingCompleted: true }),
+        });
+      }
+    } catch {
+      // Network error — still dismiss the modal
     }
     onComplete();
   };

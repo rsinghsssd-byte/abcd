@@ -5,6 +5,7 @@ import detectionsRouter from "./detections";
 import statsRouter from "./stats";
 import authRouter from "./auth";
 import chatRouter from "./chat";
+import usersRouter from "./users";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(detectionsRouter);
 router.use(statsRouter);
 router.use(authRouter);
 router.use(chatRouter);
+router.use(usersRouter);
 
 export default router;

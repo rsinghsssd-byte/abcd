@@ -339,7 +339,7 @@ export async function runDetection(
     counts: buildCounts(objects),
     severity: computeSeverity(buildCounts(objects)),
     processingTimeMs: Date.now() - start,
-    aiPowered: true,
+    aiPowered: hasPotholeNet || hasLitterCam,
   };
 }
 

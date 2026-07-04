@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { Camera, CameraOff, Zap, AlertTriangle, RefreshCw, ScanLine } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 import { getListDetectionsQueryKey, getGetStatsQueryKey, getGetRecentDetectionsQueryKey } from "@workspace/api-client-react";
 import { CircularGauge } from "@/components/ui/CircularGauge";
 
@@ -49,6 +50,7 @@ export default function CameraPage() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const [scanning, setScanning] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
@@ -157,6 +159,7 @@ export default function CameraPage() {
         setFrameCount((n) => n + 1);
         drawOverlay(data.objects, vw, vh);
       } catch {
+        toast({ title: "Frame analysis failed", description: "Check server connection", variant: "destructive" });
       } finally {
         setScanningInProgress(false);
       }
