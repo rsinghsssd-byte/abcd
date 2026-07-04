@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import { setGlobalHeader, setAuthTokenGetter } from "@workspace/api-client-react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { speak } from "@/lib/tts";
 
 import Home from "@/pages/Home";
 import Dashboard from "@/pages/Dashboard";
@@ -24,6 +25,16 @@ function AppContent() {
     setGlobalHeader("X-Username", user?.username ?? null);
     setAuthTokenGetter(() => localStorage.getItem("roadscan_token"));
   }, [user?.username]);
+
+  const [greeted, setGreeted] = useState(false);
+  useEffect(() => {
+    if (greeted || isLoading) return;
+    setGreeted(true);
+    if (user) {
+      const name = user.displayName || user.username;
+      speak(`Hi ${name}, welcome back to RoadScan.`);
+    }
+  }, [user, isLoading, greeted]);
 
   if (isLoading) {
     return (

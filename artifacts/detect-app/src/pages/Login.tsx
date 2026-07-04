@@ -1,18 +1,11 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth";
+import { speak } from "@/lib/tts";
 
 type Step = "greeting" | "credentials" | "loading" | "error";
 
-function speak(text: string) {
-  if (typeof window === "undefined" || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.rate = 1.0;
-  u.pitch = 1.0;
-  u.volume = 1;
-  window.speechSynthesis.speak(u);
-}
+const GREETING = "Hi, I'm your AI assistant for pothole and litter detection! Enter a username to get started, or sign in if you already have an account.";
 
 export default function Login() {
   const [step, setStep] = useState<Step>("greeting");
@@ -21,38 +14,10 @@ export default function Login() {
   const [errorMsg, setErrorMsg] = useState("");
   const [isSignup, setIsSignup] = useState(false);
   const { signup, signin } = useAuth();
-  const greeted = useRef(false);
-  const interacted = useRef(false);
-
-  const trySpeak = useCallback((text: string) => {
-    if (typeof window === "undefined" || !window.speechSynthesis || !text) return;
-    if (!interacted.current) return;
-    try {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 1.0;
-      u.pitch = 1.0;
-      u.volume = 1;
-      window.speechSynthesis.speak(u);
-    } catch {
-      // TTS not available
-    }
-  }, []);
 
   useEffect(() => {
-    if (greeted.current) return;
-    greeted.current = true;
-    const msg = "Hi, I'm your AI assistant for pothole and litter detection! Enter a username to get started, or sign in if you already have an account.";
-    trySpeak(msg);
-  }, [trySpeak]);
-
-  const handleInteraction = () => {
-    if (!interacted.current) {
-      interacted.current = true;
-      const msg = "Hi, I'm your AI assistant for pothole and litter detection! Enter a username to get started, or sign in if you already have an account.";
-      trySpeak(msg);
-    }
-  };
+    speak(GREETING);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,14 +75,13 @@ export default function Login() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4" onClick={handleInteraction}>
+          <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
             <div>
               <label className="block text-xs font-serif font-medium text-stone-600 mb-1">Username</label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                onFocus={handleInteraction}
                 placeholder="Your username"
                 maxLength={32}
                 className="w-full px-3 py-2.5 rounded-lg border border-stone-300 bg-white/80 text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/30 focus:border-stone-400 font-serif transition-all"
@@ -132,7 +96,6 @@ export default function Login() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                onFocus={handleInteraction}
                 placeholder="At least 4 characters"
                 className="w-full px-3 py-2.5 rounded-lg border border-stone-300 bg-white/80 text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/30 focus:border-stone-400 font-serif transition-all"
                 disabled={step === "loading"}
