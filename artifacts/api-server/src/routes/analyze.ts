@@ -92,7 +92,7 @@ router.post("/analyze/image", upload.single("file"), async (req, res): Promise<v
       .returning();
 
     req.log.info({ id: detection.id, objects: result.counts.total, aiPowered: result.aiPowered }, "Image analyzed");
-    res.json(detection);
+    res.json({ ...detection, lat: detection.latitude, lon: detection.longitude });
   } catch (err) {
     req.log.error({ err }, "Image analysis failed");
     res.status(500).json({ error: "Analysis failed" });
@@ -146,7 +146,7 @@ router.post("/analyze/video", upload.single("file"), async (req, res): Promise<v
       .returning();
 
     req.log.info({ id: detection.id, objects: result.counts.total, aiPowered: result.aiPowered }, "Video analyzed");
-    res.json(detection);
+    res.json({ ...detection, lat: detection.latitude, lon: detection.longitude });
   } catch (err) {
     req.log.error({ err }, "Video analysis failed");
     res.status(500).json({ error: "Analysis failed" });
@@ -203,7 +203,7 @@ router.post("/analyze/frame", memUpload.single("frame"), async (req, res): Promi
       .returning();
 
     req.log.info({ id: detection.id, objects: result.counts.total, source: "camera" }, "Frame saved");
-    res.json(detection);
+    res.json({ ...detection, lat: detection.latitude, lon: detection.longitude });
   } catch (err) {
     logger.error({ err }, "Frame analysis failed");
     res.status(500).json({ error: "Frame analysis failed" });

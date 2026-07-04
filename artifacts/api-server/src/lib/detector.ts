@@ -258,15 +258,15 @@ async function annotateImage(
     const labelW = Math.max(bw, labelText.length * 7 + 12);
     const colorStr = `rgb(${color.r},${color.g},${color.b})`;
 
-    const rectSvg = `<svg width="${bw}" height="${bh}">
+    const rectSvg = `<svg width="${bw}" height="${bh}" xmlns="http://www.w3.org/2000/svg">
       <rect x="0" y="0" width="${bw}" height="${bh}"
         fill="none" stroke="${colorStr}" stroke-width="3" stroke-opacity="0.95"/>
     </svg>`;
 
-    const labelSvg = `<svg width="${labelW}" height="${labelH}">
+    const labelSvg = `<svg width="${labelW}" height="${labelH}" xmlns="http://www.w3.org/2000/svg">
       <rect x="0" y="0" width="${labelW}" height="${labelH}"
         fill="${colorStr}" fill-opacity="0.92"/>
-      <text x="6" y="16" font-family="monospace" font-size="12" fill="white" font-weight="bold">${labelText}</text>
+      <text x="6" y="16" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="white" font-weight="bold">${labelText}</text>
     </svg>`;
 
     const safeLeft = Math.max(0, Math.min(bx, imgW - bw));

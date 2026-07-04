@@ -40,7 +40,10 @@ router.get("/detections", requireAuth, async (req, res): Promise<void> => {
         .where(whereClause),
     ]);
 
-    res.json({ items: rows, total: totalRow?.count ?? 0 });
+    res.json({
+      items: rows.map(r => ({ ...r, lat: r.latitude, lon: r.longitude })),
+      total: totalRow?.count ?? 0
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to list detections");
     res.status(500).json({ error: "Failed to load detections" });
@@ -56,7 +59,7 @@ router.get("/detections/map", requireAuth, async (req, res): Promise<void> => {
       .where(and(eq(detectionsTable.userId, uid), sql`${detectionsTable.latitude} IS NOT NULL`))
       .orderBy(desc(detectionsTable.createdAt));
 
-    res.json(rows);
+    res.json(rows.map(r => ({ ...r, lat: r.latitude, lon: r.longitude })));
   } catch (err) {
     req.log.error({ err }, "Failed to load map detections");
     res.status(500).json({ error: "Failed to load map detections" });
@@ -80,7 +83,7 @@ router.get("/detections/:id", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(detection);
+  res.json({ ...detection, lat: detection.latitude, lon: detection.longitude });
 });
 
 router.delete("/detections/:id", requireAuth, async (req, res): Promise<void> => {
