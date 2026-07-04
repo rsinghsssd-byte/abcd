@@ -51,13 +51,11 @@ export default function CameraPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const [scanning, setScanning] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [scanning_in_progress, setScanningInProgress] = useState(false);
@@ -96,11 +94,9 @@ export default function CameraPage() {
   }, []);
 
   const stopCamera = useCallback(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     setCameraOn(false);
-    setScanning(false);
     setScanningInProgress(false);
     clearOverlay();
   }, []);
@@ -191,21 +187,9 @@ export default function CameraPage() {
     }, "image/jpeg", 0.85);
   }, [scanning_in_progress, drawOverlay]);
 
-  const startScanning = useCallback(() => {
-    setScanning(true);
+  const handleCapture = useCallback(() => {
     captureAndAnalyze();
-    intervalRef.current = setInterval(() => captureAndAnalyze(), 2000);
   }, [captureAndAnalyze]);
-
-  const stopScanning = useCallback(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    setScanning(false);
-    setScanningInProgress(false);
-    clearOverlay();
-    queryClient.invalidateQueries({ queryKey: getListDetectionsQueryKey() });
-    queryClient.invalidateQueries({ queryKey: getGetStatsQueryKey() });
-    queryClient.invalidateQueries({ queryKey: getGetRecentDetectionsQueryKey() });
-  }, [queryClient]);
 
   useEffect(() => {
     return () => {
@@ -301,25 +285,21 @@ export default function CameraPage() {
 
             <canvas ref={canvasRef} className="hidden" />
 
-            {cameraOn && scanning && (
+            {cameraOn && scanning_in_progress && (
               <div className="absolute top-3 left-3 flex items-center gap-2">
-                <motion.div
-                  className="w-3 h-3 rounded-full bg-red-500"
-                  animate={{ opacity: [1, 0.3, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                />
+                <RefreshCw className="w-4 h-4 text-white animate-spin drop-shadow-md" />
                 <span className="font-mono text-xs text-white bg-black/60 px-2 py-1">
-                  SCANNING
+                  PROCESSING
                 </span>
               </div>
             )}
 
-            {cameraOn && scanning && scanning_in_progress && (
+            {cameraOn && scanning_in_progress && (
               <motion.div
                 className="absolute inset-0 pointer-events-none"
                 animate={{ opacity: [0, 0.15, 0] }}
-                transition={{ duration: 0.3 }}
-                style={{ background: "rgba(0, 200, 80, 0.3)" }}
+                transition={{ duration: 0.8, repeat: Infinity }}
+                style={{ background: "rgba(255, 255, 255, 0.2)" }}
               />
             )}
 
@@ -346,29 +326,21 @@ export default function CameraPage() {
               </motion.button>
             ) : (
               <>
-                {!scanning ? (
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={startScanning}
-                    className="flex items-center gap-2 px-4 py-2 font-serif text-sm font-semibold text-stone-100"
-                    style={{ background: "hsl(30 10% 25%)" }}
-                  >
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleCapture}
+                  disabled={scanning_in_progress}
+                  className="flex items-center gap-2 px-4 py-2 font-serif text-sm font-semibold text-stone-100 disabled:opacity-50"
+                  style={{ background: "hsl(30 10% 25%)" }}
+                >
+                  {scanning_in_progress ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
                     <Zap className="w-4 h-4" />
-                    Start Scanning
-                  </motion.button>
-                ) : (
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={stopScanning}
-                    className="flex items-center gap-2 px-4 py-2 font-serif text-sm font-semibold"
-                    style={{ color: "#b91c1c", border: "1px solid #b91c1c40", background: "#b91c1c10" }}
-                  >
-                    <CameraOff className="w-4 h-4" />
-                    Stop Scanning
-                  </motion.button>
-                )}
+                  )}
+                  {scanning_in_progress ? "Processing..." : "Capture Frame"}
+                </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -410,8 +382,8 @@ export default function CameraPage() {
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs font-serif text-stone-500">Interval</span>
-                <span className="text-xs font-mono font-medium text-stone-700">2.0s</span>
+                <span className="text-xs font-serif text-stone-500">Mode</span>
+                <span className="text-xs font-mono font-medium text-stone-700">Manual Capture</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs font-serif text-stone-500">Frames analyzed</span>
