@@ -1,3 +1,12 @@
+---
+title: RoadScan AI
+emoji: 🛣️
+colorFrom: blue
+colorTo: orange
+sdk: docker
+pinned: false
+---
+
 <div align="center">
   <img src="https://raw.githubusercontent.com/m-pranavraj/RoadScan/0a20eb5fcf0dddd0f9b60cf93c662589fbfd2f3d/docs/assets/hero_banner.png" alt="RoadScan Hero Banner" width="100%" />
   
