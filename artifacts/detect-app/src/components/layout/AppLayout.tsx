@@ -132,15 +132,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               ))}
             </nav>
             <div className="p-3 border-t border-dashed border-stone-300/50 shrink-0 space-y-1">
-              {user && (
-                <button
-                  onClick={logout}
-                  className="flex w-full items-center gap-2 px-2 py-1.5 rounded text-xs font-mono text-stone-500 hover:text-red-700 hover:bg-red-100/50 transition-colors whitespace-nowrap"
-                >
-                  <LogOut className="w-4 h-4 shrink-0" />
-                  <span>Sign Out</span>
-                </button>
-              )}
+
               <button
                 onClick={() => setDesktopOpen(false)}
                 className="hidden md:flex w-full items-center gap-2 px-2 py-1.5 rounded text-xs font-mono text-stone-500 hover:text-stone-700 hover:bg-stone-200/50 transition-colors whitespace-nowrap"

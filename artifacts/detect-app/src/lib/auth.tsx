@@ -26,17 +26,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("roadscan_token");
-    const storedUser = localStorage.getItem("roadscan_user");
-    if (storedToken && storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-        setToken(storedToken);
-      } catch {
-        localStorage.removeItem("roadscan_token");
-        localStorage.removeItem("roadscan_user");
-      }
-    }
+    // Completely bypass authentication by setting a global mock user
+    setUser({
+      id: 0,
+      username: "global_guest",
+      displayName: "Global Guest",
+      onboardingCompleted: true,
+      theme: "light",
+    });
+    setToken("guest-token-bypass");
     setIsLoading(false);
   }, []);
 

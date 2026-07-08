@@ -1,17 +1,14 @@
 import { Router, type IRouter } from "express";
-import { eq, desc } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { db, detectionsTable, type DetectedObject } from "@workspace/db";
-import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
-router.get("/stats", requireAuth, async (req, res): Promise<void> => {
+router.get("/stats", async (req, res): Promise<void> => {
   try {
-    const uid = req.userId as number;
     const all = await db
       .select()
       .from(detectionsTable)
-      .where(eq(detectionsTable.userId, uid))
       .orderBy(desc(detectionsTable.createdAt));
 
     const totalScans = all.length;
@@ -70,13 +67,11 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
   }
 });
 
-router.get("/recent", requireAuth, async (req, res): Promise<void> => {
+router.get("/recent", async (req, res): Promise<void> => {
   try {
-    const uid = req.userId as number;
     const rows = await db
       .select()
       .from(detectionsTable)
-      .where(eq(detectionsTable.userId, uid))
       .orderBy(desc(detectionsTable.createdAt))
       .limit(5);
 

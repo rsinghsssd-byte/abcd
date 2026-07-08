@@ -6,11 +6,10 @@ import {
   GetDetectionParams,
   DeleteDetectionParams,
 } from "@workspace/api-zod";
-import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
-router.get("/detections", requireAuth, async (req, res): Promise<void> => {
+router.get("/detections", async (req, res): Promise<void> => {
   try {
     const parsed = ListDetectionsQueryParams.safeParse(req.query);
     if (!parsed.success) {
@@ -20,11 +19,11 @@ router.get("/detections", requireAuth, async (req, res): Promise<void> => {
 
     const { limit = 20, offset = 0, mediaType = "all" } = parsed.data;
 
-    const conditions: any[] = [eq(detectionsTable.userId, req.userId as number)];
+    const conditions: any[] = [];
     if (mediaType !== "all") {
       conditions.push(eq(detectionsTable.mediaType, mediaType as "image" | "video"));
     }
-    const whereClause = and(...conditions);
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     const [rows, [totalRow]] = await Promise.all([
       db
@@ -95,7 +94,7 @@ router.get("/detections/:id", async (req, res): Promise<void> => {
   res.json({ ...detection, lat: detection.latitude, lon: detection.longitude });
 });
 
-router.delete("/detections/:id", requireAuth, async (req, res): Promise<void> => {
+router.delete("/detections/:id", async (req, res): Promise<void> => {
   const params = DeleteDetectionParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -104,7 +103,7 @@ router.delete("/detections/:id", requireAuth, async (req, res): Promise<void> =>
 
   const [deleted] = await db
     .delete(detectionsTable)
-    .where(and(eq(detectionsTable.id, params.data.id), eq(detectionsTable.userId, req.userId as number)))
+    .where(eq(detectionsTable.id, params.data.id))
     .returning();
 
   if (!deleted) {
